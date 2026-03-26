@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>自定義數學計算器</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
+        .form-group { margin-bottom: 15px; }
+        label { display: inline-block; width: 120px; }
+        input { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 15px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>自定義次方與根號計算器</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>請輸入數字：</label>
+            <input type="number" step="any" name="base_num" required placeholder="例如：8">
+        </div>
+        
+        <div class="form-group">
+            <label>我要算次方：</label>
+            <input type="number" step="any" name="exp_val" value="2"> 次方
+        </div>
+        
+        <div class="form-group">
+            <label>我要開根號：</label>
+            <input type="number" step="any" name="root_degree" value="2"> 次方根 
+            <span>(2 為平方根，3 為立方根)</span>
+        </div>
+        
+        <button type="submit">送出計算</button>
+    </form>
+    <br>
+    <a href="/">取消並回首頁</a>
+    
+</body>
+</html>
