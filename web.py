@@ -1,3 +1,5 @@
+import requests
+from bs4 import BeautifulSoup
 from flask import Flask, render_template,request
 
 from datetime import datetime
@@ -37,12 +39,14 @@ def index():
 @app.route("/read")
 def read():
     Result = ""
+    keyword = "楊"
     db = firestore.client()
-    collection_ref = db.collection("資管二B_2026s")    
+    collection_ref = db.collection("資管二B_2026s")
     docs = collection_ref.get()
     collection_ref = db.collection("靜宜資管")
     docs = collection_ref.order_by("lab", direction=firestore.Query.DESCENDING).limit(5).get()    
-    for doc in docs:         
+    for doc in docs:
+        teacher   
         Result += "文件內容：{}".format(doc.to_dict()) + "<br>"    
     return Result
 
