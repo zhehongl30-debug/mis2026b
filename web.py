@@ -33,8 +33,28 @@ def index():
     link += "<a href='/calculate'>次方與根號計算</a><hr>"
     link += "<a href='/read'>讀取Firestore資料(靜宜資管)</a><hr>"
     link += "<a href='/read1'>關鍵字查詢(資管二B)</a><hr>"
-    link += "<a href='/spider'>爬蟲w8(爬曲子卿老師的課程)</a><hr>"
+    link += "<a href='/spider'>爬蟲w8(爬取子卿老師的課程)</a><hr>"
+    link += "<a href='/movie1'>爬取即將上映的電影</a><hr>"
     return link
+
+@app.route("/movie1")
+def movie1():
+    R = ""
+    url = "https://www.atmovies.com.tw/movie/next/"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+    #print(Data.text)
+    sp = BeautifulSoup(Data.text, "html.parser")
+    result=sp.select(".filmListAllX li")
+    for item in result:
+        name = item.find("img").get("alt")
+        introduce = "https://www.atmovies.com.tw" + item.find("a").get("href")
+        img_src = "https://www.atmovies.com.tw" + item.find("img").get("src")
+        
+        R += f"<a href='{introduce}'>{name}</a><br>"
+        R += f"{img_src}<br><br>"
+        
+    return R
 
 @app.route("/spider")
 def spider():
@@ -44,9 +64,10 @@ def spider():
         Data = requests.get(url)
         Data.encoding = "utf-8"
         sp = BeautifulSoup(Data.text, "html.parser")
-        result = sp.select(".team-box a")
+        result = sp.select("td")
         for i in result:
             R += i.text + i.get("href") + "<br>"
+
     except Exception as e:
         R = f"爬蟲抓取失敗: {e}"
     return R
