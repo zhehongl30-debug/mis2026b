@@ -51,8 +51,8 @@ def movie1():
         introduce = "https://www.atmovies.com.tw" + item.find("a").get("href")
         img_src = "https://www.atmovies.com.tw" + item.find("img").get("src")
         
-        R += f"<a href='{introduce}'>{name}</a><br>"
-        R += f"{img_src}<br><br>"
+        R += f"<a href='{introduce}'><h2>{name}</h2></a>"
+        R += f"<img src='{img_src}' width='200'><br><br>"
         
     return R
 
