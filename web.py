@@ -35,7 +35,102 @@ def index():
     link += "<a href='/read1'>關鍵字查詢(資管二B)</a><hr>"
     link += "<a href='/spider'>爬蟲w8(爬取子卿老師的課程)</a><hr>"
     link += "<a href='/movie1'>爬取即將上映的電影</a><hr>"
+    link += "<a href='/spidermovie'>進入資料庫的電影</a><hr>"
+    link += "<a href='/searchMovie'>電影搜尋系統</a><hr>"    
     return link
+
+@app.route("/searchMovie", methods=["GET", "POST"])
+def searchMovie():
+    html_content = """
+    <form method="post" action="/searchMovie">
+        請輸入欲查詢的片名：
+        <input type="text" name="MovieTitle" />
+        <button type="submit">確定送出</button>
+    </form>
+    <hr>
+    """
+
+    if request.method == "POST":
+        keyword = request.form.get("MovieTitle", "").strip()
+        if keyword:
+            db = firestore.client()
+            docs = db.collection("電影2B").get()
+            
+            found_count = 0
+            result_html = ""
+            
+            for doc in docs:
+                movie = doc.to_dict()
+                title = movie.get("title", "")
+                
+                if keyword.lower() in title.lower():
+                    found_count += 1
+                    result_html += f"""
+                    <div style="border-bottom: 1px solid #ccc; margin-bottom: 10px;">
+                        <p><b>編號：</b> {found_count}</p>
+                        <p><b>片名：</b> {title}</p>
+                        <p><b>上映日期：</b> {movie.get('showDate', '未知')}</p>
+                        <p><a href="{movie.get('hyperlink', '#')}" target="_blank">點我查看電影介紹</a></p>
+                        <img src="{movie.get('picture', '')}" width="150" alt="電影海報"><br><br>
+                    </div>
+                    """
+            
+            if found_count > 0:
+                html_content += f"<h3>找到 {found_count} 部符合「{keyword}」的電影：</h3>" + result_html
+            else:
+                html_content += f"<p style='color:red;'>抱歉，資料庫中找不到包含「{keyword}」的電影。</p>"
+        else:
+            html_content += "<p>請輸入片名關鍵字。</p>"
+
+    html_content += "<br><a href='/'>返回首頁</a>"
+    return html_content
+
+
+@app.route("/spidermovie")
+def spidermovie():
+    R = ""
+
+    db = firestore.client()
+
+    import requests
+    from bs4 import BeautifulSoup
+    url = "http://www.atmovies.com.tw/movie/next/"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+
+    sp = BeautifulSoup(Data.text, "html.parser")
+    lastUpdate = sp.find(class_="smaller09").text.replace("更新時間；","")
+
+    result=sp.select(".filmListAllX li")
+
+    total = 0
+
+    for item in result:
+      movie_id = item.find("a").get("href").replace("/movie/","").replace("/","")
+      title = item.find("div", class_="filmtitle").text
+      picture = "http://www.atmovies.com.tw" + item.find("img").get("src")
+      hyperlink = "http://www.atmovies.com.tw" + item.find("a").get("href")
+
+      showDate = item.find(class_="runtime").text[5:15]
+
+      total += 1
+
+      doc = {
+          "title": title,
+          "picture": picture,
+          "hyperlink": hyperlink,
+          "showDate": showDate,
+          "lastUpdate": lastUpdate
+          #"showLength": showLength, 這個是片長的部分
+      }
+
+      doc_ref = db.collection("電影2B").document(movie_id)
+      doc_ref.set(doc)
+
+    R += "網站最近更新日期" + lastUpdate + "<br>"
+    R += "總共爬取" + str(total) + "部電影到資料庫"
+        
+    return R
 
 @app.route("/movie1")
 def movie1():
