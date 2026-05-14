@@ -1,12 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response, jsonify
+
 from datetime import datetime
 import os
 import json
 import firebase_admin
-from firebase_admin import credentials, firestore, make_response, jsonify
-
+from firebase_admin import credentials, firestore
 import math
 
 # 1. 判斷環境並初始化 Firebase
@@ -51,7 +51,7 @@ def webhook():
     msg =  req.get("queryResult").get("queryText")
     info = "動作：" + action + "； 查詢內容：" + msg
     return make_response(jsonify({"fulfillmentText": info}))
-    
+
 @app.route("/rate")
 def rate():
     #本週新片
