@@ -42,7 +42,7 @@ def index():
     link += "<a href='/rate'>本周新片</a><hr>"     
     return link
 
-@app.route("/webhook", methods=["POST"])
+#@app.route("/webhook", methods=["POST"])
 def webhook():
     # 取得 Dialogflow 的請求
     req = request.get_json(force=True)
@@ -80,7 +80,7 @@ def webhook():
     # 回傳給 Dialogflow 的格式
     return make_response(jsonify({"fulfillmentText": info}))
 
-#@app.route("/webhook", methods=["POST"])
+@app.route("/webhook", methods=["POST"])
 #def webhook():
     # build a request object
     req = request.get_json(force=True)
@@ -91,7 +91,7 @@ def webhook():
 
     if (action == "rateChoice"):
         rate =  req["queryResult"]["parameters"]["rate"]
-        info = "我是徐晣紘設計的機器人您選擇的電影分級是：" + rate
+        info = "我是徐晣紘設計的機器人您選擇的電影分級是：" + rate + "\n"
 
     db = firestore.client()
     collection_ref = db.collection("本週新片含分級")
