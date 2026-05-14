@@ -37,18 +37,93 @@ def index():
     link += "<a href='/movie1'>爬取即將上映的電影</a><hr>"
     link += "<a href='/spidermovie'>進入資料庫的電影</a><hr>"
     link += "<a href='/searchMovie'>電影搜尋系統</a><hr>"
-    link += "<a href='/road'>台中市十大肇事原因</a><hr>"     
+    link += "<a href='/road'>台中市十大肇事原因</a><hr>"
+    link += "<a href='/rate'>本周新片</a><hr>"      
     return link
 
+@app.route("/rate")
+def rate():
+    #本週新片
+    url = "https://www.atmovies.com.tw/movie/new/"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+    sp = BeautifulSoup(Data.text, "html.parser")
+    lastUpdate = sp.find(class_="smaller09").text[5:]
+    print(lastUpdate)
+    print()
+
+    result=sp.select(".filmList")
+
+    for x in result:
+        title = x.find("a").text
+        introduce = x.find("p").text
+
+        movie_id = x.find("a").get("href").replace("/", "").replace("movie", "")
+        hyperlink = "http://www.atmovies.com.tw/movie/" + movie_id
+        picture = "https://www.atmovies.com.tw/photo101/" + movie_id + "/pm_" + movie_id + ".jpg"
+
+        r = x.find(class_="runtime").find("img")
+        rate = ""
+        if r != None:
+            rr = r.get("src").replace("/images/cer_", "").replace(".gif", "")
+            if rr == "G":
+                rate = "普遍級"
+            elif rr == "P":
+                rate = "保護級"
+            elif rr == "F2":
+                rate = "輔12級"
+            elif rr == "F5":
+                rate = "輔15級"
+            else:
+                rate = "限制級"
+
+        t = x.find(class_="runtime").text
+
+        t1 = t.find("片長")
+        t2 = t.find("分")
+        showLength = t[t1+3:t2]
+
+        t1 = t.find("上映日期")
+        t2 = t.find("上映廳數")
+        showDate = t[t1+5:t2-8]
+
+        doc = {
+            "title": title,
+            "introduce": introduce,
+            "picture": picture,
+            "hyperlink": hyperlink,
+            "showDate": showDate,
+            "showLength": int(showLength),
+            "rate": rate,
+            "lastUpdate": lastUpdate
+        }
+
+        db = firestore.client()
+        doc_ref = db.collection("本週新片含分級").document(movie_id)
+        doc_ref.set(doc)
+    return "本週新片已爬蟲及存檔完畢，網站最近更新日期為：" + lastUpdate
+    
 @app.route("/road")
 def road():
     R = "台中市十大肇事路口(113年10月)"
     url ="https://datacenter.taichung.gov.tw/swagger/OpenData/a1b899c0-511f-4e3d-b22b-814982a97e41"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'}
-    Data = requests.get(url)
-    JsonData = json.loads(Data.text)
-    for item in JsonData:
-        R += item["路口名稱"] + "原因:" + item["主要肇因"] +"<br?"
+
+    try:
+        # 使用 requests 內建的 .json() 方法更簡潔
+        response = requests.get(url, headers=headers)
+        JsonData = response.json()
+            
+        # 遍歷資料
+        for item in JsonData:
+            # 修正 <br> 標籤，並加上加粗讓閱讀更方便
+            R += f"<b>路口：</b>{item.get('路口名稱', '未知')} <br>"
+            R += f"<b>原因：</b>{item.get('主要肇因', '資料缺漏')} <br><hr>"
+            
+    except Exception as e:
+        R += f"資料讀取失敗，錯誤原因: {e}"
+    
+    R += "<br><a href='/'>返回首頁</a>"
     return R
 
 @app.route("/searchMovie", methods=["GET", "POST"])
