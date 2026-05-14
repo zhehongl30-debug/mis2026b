@@ -5,7 +5,8 @@ from datetime import datetime
 import os
 import json
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, make_response, jsonify
+
 import math
 
 # 1. 判斷環境並初始化 Firebase
@@ -38,8 +39,19 @@ def index():
     link += "<a href='/spidermovie'>進入資料庫的電影</a><hr>"
     link += "<a href='/searchMovie'>電影搜尋系統</a><hr>"
     link += "<a href='/road'>台中市十大肇事原因</a><hr>"
-    link += "<a href='/rate'>本周新片</a><hr>"      
+    link += "<a href='/rate'>本周新片</a><hr>"     
     return link
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    # build a request object
+    req = request.get_json(force=True)
+    # fetch queryResult from json
+    action =  req.get("queryResult").get("action")
+    msg =  req.get("queryResult").get("queryText")
+    info = "動作：" + action + "； 查詢內容：" + msg
+    return make_response(jsonify({"fulfillmentText": info}))
+
 
 @app.route("/rate")
 def rate():
@@ -102,7 +114,7 @@ def rate():
         doc_ref = db.collection("本週新片含分級").document(movie_id)
         doc_ref.set(doc)
     return "本週新片已爬蟲及存檔完畢，網站最近更新日期為：" + lastUpdate
-    
+
 @app.route("/road")
 def road():
     R = "台中市十大肇事路口(113年10月)"
