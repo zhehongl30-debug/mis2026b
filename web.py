@@ -39,49 +39,16 @@ def index():
     link += "<a href='/spidermovie'>進入資料庫的電影</a><hr>"
     link += "<a href='/searchMovie'>電影搜尋系統</a><hr>"
     link += "<a href='/road'>台中市十大肇事原因</a><hr>"
-    link += "<a href='/rate'>本周新片</a><hr>"     
+    link += "<a href='/rate'>本周新片</a><hr>"   
+    link += "<a href='/webdemo'>聊天機器人</a><hr>"    
     return link
 
-#@app.route("/webhook", methods=["POST"])
-def webhook():
-    # 取得 Dialogflow 的請求
-    req = request.get_json(force=True)
-    action = req.get("queryResult").get("action")
-    
-    # 預設回覆文字
-    info = "我是徐晣紘設計的機器人。"
-    
-    if action == "rateChoice":
-        # 獲取參數，若無則預設為空字串
-        rate = req.get("queryResult").get("parameters").get("rate", "")
-        info += f"您選擇的電影分級是：{rate}\n\n"
-
-        db = firestore.client()
-        # 建議改用 Firestore 查詢功能 (where)，效率更高
-        # 假設你的 Firestore 欄位名稱是 "rate"
-        collection_ref = db.collection("本週新片含分級")
-        docs = collection_ref.where("rate", "==", rate).get()
-        
-        result = ""
-        found_count = 0
-        for doc in docs:
-            movie_data = doc.to_dict()
-            result += f"🎬 片名：{movie_data.get('title')}\n"
-            result += f"🔗 介紹：{movie_data.get('hyperlink')}\n\n"
-            found_count += 1
-        
-        if found_count == 0:
-            result = "抱歉，目前找不到該分級的電影。"
-        
-        info += result
-    else:
-        info += "我不太明白您的指令，請嘗試查詢電影分級。"
-
-    # 回傳給 Dialogflow 的格式
-    return make_response(jsonify({"fulfillmentText": info}))
+@app.route("/webdemo")
+def webdemo():
+    return render_template("webdemo.html")
 
 @app.route("/webhook", methods=["POST"])
-#def webhook():
+def webhook():
     # build a request object
     req = request.get_json(force=True)
     # fetch queryResult from json
