@@ -120,7 +120,7 @@ def webhook():
         )
         
         response = client.models.generate_content(
-            model='gemini-3.5-flash', 
+            model='gemini-3.5-flash-lite', 
             contents=req["queryResult"]["queryText"],
             config=ai_config,
         )
@@ -132,7 +132,7 @@ def webhook():
 
 
     return make_response(jsonify({"fulfillmentText": info}))
-    
+
 @app.route("/rate")
 def rate():
     #本週新片
