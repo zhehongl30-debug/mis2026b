@@ -98,24 +98,24 @@ def webhook():
         rate =  req["queryResult"]["parameters"]["rate"]
         info = "我是徐晣紘設計的機器人您選擇的電影分級是：" + rate + "\n"
 
-    db = firestore.client()
-    collection_ref = db.collection("本週新片含分級")
-    docs = collection_ref.get()
-    result = ""
-    for doc in docs:
-        dict = doc.to_dict()
-        if rate in dict["rate"]:
-            result += "片名：" + dict["title"] + "\n"
-            result += "介紹：" + dict["hyperlink"] + "\n\n"
-    info += result
+        db = firestore.client()
+        collection_ref = db.collection("本週新片含分級")
+        docs = collection_ref.get()
+        result = ""
+        for doc in docs:
+            dict = doc.to_dict()
+            if rate in dict["rate"]:
+                result += "片名：" + dict["title"] + "\n"
+                result += "介紹：" + dict["hyperlink"] + "\n\n"
+
+        info += result
 
         elif (action == "input.unknown"):
             #info =req["queryResult"]["queryText"] 
             instruction_text = (
             "你是一個熱心且知識豐富的專業智慧助理。"
             "對於使用者的提問，請回覆重點的關鍵字，不要重述問題。"         
-        )
-
+            )
 
         ai_config = types.GenerateContentConfig(
             max_output_tokens=500, 
