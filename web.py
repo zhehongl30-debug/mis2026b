@@ -118,10 +118,21 @@ def webhook():
             max_output_tokens=500, 
             system_instruction=instruction_text
         )
+        
+        response = client.models.generate_content(
+            model='gemini-3.5-flash', 
+            contents=req["queryResult"]["queryText"],
+            config=ai_config,
+        )
+
+        if response.text:
+            info = response.text
+        else:
+            info = "抱歉，我現在無法生成回應，請稍後再試。"
 
 
     return make_response(jsonify({"fulfillmentText": info}))
-
+    
 @app.route("/rate")
 def rate():
     #本週新片
