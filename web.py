@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from google import genai
 from flask import Flask, render_template, request, make_response, jsonify
 
 from datetime import datetime
@@ -23,6 +24,8 @@ if not firebase_admin._apps:
 # 2. 初始化 Flask (原本漏掉這行)
 app = Flask(__name__)
 
+client = genai.Client()
+
 @app.route("/")
 def index():
     link = "<h1>歡迎進入徐晣紘的網站20260409</h1>"
@@ -40,8 +43,22 @@ def index():
     link += "<a href='/searchMovie'>電影搜尋系統</a><hr>"
     link += "<a href='/road'>台中市十大肇事原因</a><hr>"
     link += "<a href='/rate'>本周新片</a><hr>"   
-    link += "<a href='/webdemo'>聊天機器人</a><hr>"    
+    link += "<a href='/webdemo'>聊天機器人</a><hr>"
+    link += "<a href='/AI'>AI</a><hr>"    
+    
     return link
+
+@app.route("/AI")
+def AI():
+    # 每次使用者拜訪該路徑時，直接使用全域的 client 呼叫模型
+    response = client.models.generate_content(
+        model='gemini-3.5-flash',
+        contents='我想查詢靜宜大學資管系的評價？',
+    )
+    
+    # 回傳生成的文字
+    return response.text
+
 
 @app.route("/webdemo")
 def webdemo():
